@@ -25,21 +25,28 @@ async function main() {
 
   // 実行
   for(item in url_list) {
+    console.log(`${url_list[item]} の読み込みを開始します……`);
     const file_name = sanitizeFilename(url_list[item], {replacement: '-'}).replace(/\./g, '-') + '.txt';
     const path = './dl/';
     const fetch_data = await fetchUrl(url_list[item]);
-    fs.readFile(path + file_name, 'utf-8', (err, data) => {
+    fs.readFile(path + file_name, 'utf-8', async (err, data) => {
       if(err) {
+        console.log('初回読み込みのため、データを保存します。');
         fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
           if(err) { throw err; };
+          console.log('保存が終了しました。');
         })
       }
       else {
-        // fs.writeFile(path + 'new_' + file_name, fetch_data, 'utf-8', err => {
-        //   if(err) { throw err; };
-        // })
         const diffs = diffContent(data, fetch_data);
-        postDiscord(url_list[item], diffs);
+        if(diffs.length) {
+          await postDiscord(url_list[item], diffs);
+        } else {
+          console.log(`${url_list[item]} の変更点はありませんでした。`);
+        }
+        fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
+          if(err) { throw err; };
+        })
       }
     });
   }
@@ -66,8 +73,23 @@ function fetchUrl(url) {
 
 function diffContent(before, after) {
   const before_dom = new JSDOM(before);
-  const after_dom = new JSDOM(after);
+  const before_script = before_dom.window.document.getElementsByTagName('script');
+  for (let i = 0; i < before_script.length; i++) {
+    const e = before_script[i];
+    if(e) {
+      e.parentNode.removeChild(e);
+    }
+  }
   const before_body = before_dom.window.document.body.outerHTML;
+
+  const after_dom = new JSDOM(after);
+  const after_script = after_dom.window.document.getElementsByTagName('script');
+  for (let i = 0; i < after_script.length; i++) {
+    const e = after_script[i];
+    if(e) {
+      e.parentNode.removeChild(e);
+    }
+  }
   const after_body = after_dom.window.document.body.outerHTML;
 
   result = diff.diffLines(before_body, after_body);
@@ -111,6 +133,7 @@ function postDiscord(url, contents) {
   return new Promise((resolve, reject) => {
     axios.post(process.env.WEBHOOK, tmp, config)
       .then(result => {
+        console.log('変更点をDiscordに送信しました。');
         resolve();
       })
       .catch(err => {
