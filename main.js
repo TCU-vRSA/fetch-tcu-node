@@ -26,29 +26,8 @@ async function main() {
   // 実行
   for(item in url_list) {
     console.log(`${url_list[item]} の読み込みを開始します……`);
-    const file_name = sanitizeFilename(url_list[item], {replacement: '-'}).replace(/\./g, '-') + '.txt';
-    const path = './dl/';
-    const fetch_data = await fetchUrl(url_list[item]);
-    fs.readFile(path + file_name, 'utf-8', async (err, data) => {
-      if(err) {
-        console.log('初回読み込みのため、データを保存します。');
-        fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
-          if(err) { throw err; };
-          console.log('保存が終了しました。');
-        })
-      }
-      else {
-        const diffs = diffContent(data, fetch_data);
-        if(diffs.length) {
-          await postDiscord(url_list[item], diffs);
-        } else {
-          console.log(`${url_list[item]} の変更点はありませんでした。`);
-        }
-        fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
-          if(err) { throw err; };
-        })
-      }
-    });
+    const fetch_data = await fetchUrl(url_list[item]).catch(err => {console.log(err);});
+    await judgeContent(url_list, item, fetch_data);
   }
 }
 
@@ -68,29 +47,61 @@ function fetchUrl(url) {
       .then(response => {
         resolve(response.data);
       })
+      .catch(err => {
+        reject(err);
+      })
+  })
+}
+
+function judgeContent(url_list, item, fetch_data) {
+  const file_name = sanitizeFilename(url_list[item], {replacement: '-'}).replace(/\./g, '-') + '.txt';
+  const path = './dl/';
+  return new Promise((resolve, reject) => {
+    fs.readFile(path + file_name, 'utf-8', async (err, data) => {
+      if(err) {
+        console.log('初回読み込みのため、データを保存します。');
+        fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
+          if(err) { throw err; };
+          console.log('保存が終了しました。');
+          resolve();
+        })
+      }
+      else {
+        const diffs = diffContent(data, fetch_data);
+        if(diffs.length) {
+          await postDiscord(url_list[item], diffs);
+        } else {
+          console.log(`${url_list[item]} の変更点はありませんでした。`);
+        }
+        fs.writeFile(path + file_name, fetch_data, 'utf-8', err => {
+          if(err) { throw err; };
+        });
+        resolve();
+      }
+    });
   })
 }
 
 function diffContent(before, after) {
   const before_dom = new JSDOM(before);
   const before_script = before_dom.window.document.getElementsByTagName('script');
+  let before_body = before_dom.window.document.body.outerHTML;
   for (let i = 0; i < before_script.length; i++) {
     const e = before_script[i];
-    if(e) {
-      e.parentNode.removeChild(e);
+    if(e.outerHTML) {
+      before_body = before_body.replace(e.outerHTML, '');
     }
   }
-  const before_body = before_dom.window.document.body.outerHTML;
 
   const after_dom = new JSDOM(after);
   const after_script = after_dom.window.document.getElementsByTagName('script');
+  let after_body = after_dom.window.document.body.outerHTML;
   for (let i = 0; i < after_script.length; i++) {
     const e = after_script[i];
-    if(e) {
-      e.parentNode.removeChild(e);
+    if(e.outerHTML) {
+      after_body = after_body.replace(e.outerHTML, '');
     }
   }
-  const after_body = after_dom.window.document.body.outerHTML;
 
   result = diff.diffLines(before_body, after_body);
   let diffs = [];
