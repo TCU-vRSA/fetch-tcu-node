@@ -1,2 +1,1 @@
-https://grp.tcu.ac.jp/online/forstudents/
-https://grp.tcu.ac.jp/kyoumu/
+http://localhost:5500/index.html
