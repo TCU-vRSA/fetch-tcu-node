@@ -1,2 +1,9 @@
 https://grp.tcu.ac.jp/online/forstudents/
 https://grp.tcu.ac.jp/kyoumu/
+https://grp.tcu.ac.jp/kyoumu/orientation/sc/
+https://grp.tcu.ac.jp/kyoumu/orientation/yc/
+https://grp.tcu.ac.jp/kyoumu/orientation/tc/
+https://grp.tcu.ac.jp/kyoumu/orientation/studyabroad/
+https://grp.tcu.ac.jp/kyoumu/orientation/sc2/
+https://grp.tcu.ac.jp/kyoumu/orientation/yc2/
+https://grp.tcu.ac.jp/kyoumu/orientation/tc2/
