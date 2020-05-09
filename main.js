@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const fs = require('fs');
 const axios = require('axios');
 const sanitizeFilename = require('sanitize-filename');
@@ -14,7 +16,6 @@ async function main() {
   }
   console.log(`${file}を読み込みます。`);
   const url_list = await readUrlList(file);
-  console.log(url_list);
   console.log(`${url_list.length}件のURLを読み込みました。`);
 
   // 一次保存先フォルダがなければdlフォルダを作る
@@ -39,7 +40,6 @@ async function main() {
         // })
         const diffs = diffContent(data, fetch_data);
         postDiscord(url_list[item], diffs);
-
       }
     });
   }
@@ -86,9 +86,9 @@ function diffContent(before, after) {
 
 function postDiscord(url, contents) {
   const tmp = {
-    "username": "TCU変更通知Bot",
+    "username": "TCU変更通知Bot(Node版)",
     "avatar_url": "https://pbs.twimg.com/profile_images/1250820091018539008/4uztlH6f_400x400.jpg",
-    "content": `${url}に変更がありました。`,
+    "content": `${url} に変更がありました。`,
     "embeds": [
       {
         "fields": []
@@ -102,8 +102,21 @@ function postDiscord(url, contents) {
     }
     tmp.embeds[0].fields.push(t);
   })
-  
-  console.log(tmp);
+  const config = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-type': 'application/json',
+    }
+  }
+  return new Promise((resolve, reject) => {
+    axios.post(process.env.WEBHOOK, tmp, config)
+      .then(result => {
+        resolve();
+      })
+      .catch(err => {
+        reject(err);
+      })
+  })
 }
 
 main();
