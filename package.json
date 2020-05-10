@@ -4,5 +4,12 @@
   "main": "main.js",
   "repository": "https://github.com/TCU-vRSA/fetch-tcu-node",
   "author": "920oj",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "diff": "^4.0.2",
+    "dotenv": "^8.2.0",
+    "jsdom": "^16.2.2",
+    "sanitize-filename": "^1.6.3"
+  }
 }
