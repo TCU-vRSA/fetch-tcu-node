@@ -103,7 +103,7 @@ function diffContent(before, after) {
     }
   }
 
-  result = diff.diffLines(before_body, after_body);
+  result = diff.diffLines(before_body.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace('&nbsp', '').replace('&gt', '＞').replace('&lt', '＜').replace(' ', '').replace('\n', ''), after_body.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace('&nbsp', '').replace('&gt', '＞').replace('&lt', '＜').replace(' ', '').replace('\n', ''));
   let diffs = [];
   result.forEach(item => {
     if(item.added) {
