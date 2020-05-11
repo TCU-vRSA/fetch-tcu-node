@@ -69,7 +69,10 @@ function judgeContent(url_list, item, fetch_data) {
       else {
         const diffs = diffContent(data, fetch_data);
         if(diffs.length) {
-          await postDiscord(url_list[item], diffs);
+          await postDiscord(url_list[item], diffs)
+            .catch((err) => {
+              console.log('Discordに送信できませんでした。');
+            });
         } else {
           console.log(`${url_list[item]} の変更点はありませんでした。`);
         }
