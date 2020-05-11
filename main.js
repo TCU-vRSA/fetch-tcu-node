@@ -103,14 +103,14 @@ function diffContent(before, after) {
     }
   }
 
-  result = diff.diffLines(before_body.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace('&nbsp', '').replace('&gt', '＞').replace('&lt', '＜').replace(' ', '').replace('\n', ''), after_body.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace('&nbsp', '').replace('&gt', '＞').replace('&lt', '＜').replace(' ', '').replace('\n', ''));
+  result = diff.diffLines(before_body, after_body);
   let diffs = [];
   result.forEach(item => {
     if(item.added) {
-      diffs.push('追記: ' + item.value);
+      diffs.push('追記: ' + item.value.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace(/\r?\n/g,'').replace('&nbsp;', '').replace('&lt;', '').replace('&gt;', ''));
     }
     else if(item.removed) {
-      diffs.push('削除: ' + item.value);
+      diffs.push('削除: ' + item.value.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').replace(/\r?\n/g,'').replace('&nbsp;', '').replace('&lt;', '').replace('&gt;', ''));
     }
   });
 
